@@ -1,17 +1,124 @@
-name: pruebas ci
+name: CI - Integracion Continua
 
+# Ejecuta el workflow cuando hay push a main
 on:
   push:
     branches: [ "main" ]
-  pull_request:
-    branches: [ "main" ]
-  
+
+  # Permite ejecutarlo manualmente
+  workflow_dispatch:
+
 jobs:
-  build:
+
+  # VALIDACION PRINCIPAL
+  verificar-estructura:
+
     runs-on: ubuntu-latest
 
     steps:
-    - name: mostrar texto
-      run: echo "Hello, my world un gustow tenerte por aquish!"
-    - name: fecha
-      run: date
+
+      # Descarga el repositorio
+      - name: Clonar repositorio
+        uses: actions/checkout@v4
+
+      # Muestra archivos del proyecto
+      - name: Mostrar archivos
+        run: ls -R
+
+      # Verifica index.html
+      - name: Verificar HTML
+        run: |
+          test -f index.html
+          echo "index.html encontrado"
+
+      # Verifica CSS
+      - name: Verificar CSS
+        run: |
+          test -f styles.css
+          echo "styles.css encontrado"
+
+
+
+  # VALIDACION HTML
+  validar-html:
+
+    needs: verificar-estructura
+
+    runs-on: ubuntu-latest
+
+    steps:
+
+      - name: Clonar repositorio
+        uses: actions/checkout@v4
+
+      # Verifica estructura HTML
+      - name: Validar etiquetas HTML
+        run: |
+          grep -q "<html" index.html
+          grep -q "</html>" index.html
+          grep -q "<body" index.html
+          grep -q "</body>" index.html
+
+          echo "HTML valido"
+
+
+
+  # VALIDACION CSS
+  validar-css:
+
+    needs: verificar-estructura
+
+    runs-on: ubuntu-latest
+
+    steps:
+
+      - name: Clonar repositorio
+        uses: actions/checkout@v4
+
+      # Verifica que CSS tenga contenido
+      - name: Validar CSS
+        run: |
+          test -s styles.css
+          echo "CSS valido"
+
+
+  # DESPLIEGUE A GITHUB PAGES
+  desplegar-pagina:
+
+    # Solo despliega si las validaciones funcionan
+    needs: [validar-html, validar-css]
+
+    # Solo en la rama main
+    if: github.ref == 'refs/heads/main'
+
+    runs-on: ubuntu-latest
+
+    permissions:
+      contents: read
+      pages: write
+      id-token: write
+
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+
+    steps:
+
+      # Descarga repositorio
+      - name: Clonar repositorio
+        uses: actions/checkout@v4
+
+      # Configura GitHub Pages
+      - name: Configurar Pages
+        uses: actions/configure-pages@v5
+
+      # Sube archivos del proyecto
+      - name: Subir archivos
+        uses: actions/upload-pages-artifact@v3
+        with:
+          path: './'
+
+      # Publica la pagina
+      - name: Desplegar pagina
+        id: deployment
+        uses: actions/deploy-pages@v4
