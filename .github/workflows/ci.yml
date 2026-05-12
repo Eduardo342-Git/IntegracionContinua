@@ -1,0 +1,17 @@
+name: pruebas ci
+
+on:
+  push:
+    branches: [ "main" ]
+  pull_request:
+    branches: [ "main" ]
+  
+jobs:
+  build:
+    runs-on: ubuntu-latest
+
+    steps:
+    - name: mostrar texto
+      run: echo "Hello, my world un gustow tenerte por aquish!"
+    - name: fecha
+      run: date
