@@ -34,8 +34,8 @@ jobs:
       # Verifica CSS
       - name: Verificar CSS
         run: |
-          test -f styles.css
-          echo "styles.css encontrado"
+          test -f style.css
+          echo "style.css encontrado"
 
 
 
@@ -78,8 +78,9 @@ jobs:
       # Verifica que CSS tenga contenido
       - name: Validar CSS
         run: |
-          test -s styles.css
+          test -s style.css
           echo "CSS valido"
+
 
 
   # DESPLIEGUE A GITHUB PAGES
